@@ -1,0 +1,5 @@
+package org.mcsr.aatool.enums;
+
+public enum Ease {
+  BACK, BOUNCE, CIRCULAR, CUBIC, ELASTIC, EXPONENTIAL, QUADRATIC, QUARTIC, QUINTIC, SINUSOIDAL
+}
