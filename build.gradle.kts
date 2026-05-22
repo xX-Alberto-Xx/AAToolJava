@@ -12,6 +12,16 @@ plugins {
 
 version = "0.1.0"
 
+repositories {
+  // Use Maven Central for resolving dependencies.
+  mavenCentral()
+}
+
+dependencies {
+  // This dependency is used by the application.
+  implementation("com.google.code.gson:gson:2.14.0")
+}
+
 // Apply a specific Java toolchain to ease working on different environments.
 java {
   toolchain {

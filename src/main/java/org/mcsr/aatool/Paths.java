@@ -1,14 +1,33 @@
 package org.mcsr.aatool;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.util.stream.Stream;
+
 import org.mcsr.aatool.net.Uuid;
+import org.mcsr.aatool.utilities.OperatingSystem;
 
 public final class Paths {
   private Paths() {}
 
-  public static boolean tryGetAllFiles(String path, String pattern, SearchOption search, /*out */Iterable<String> files) {}
+  public static Stream<Path> tryGetAllFiles(Path path, String pattern, boolean recurse) {
+    try {
+      PathMatcher matcher = path.getFileSystem().getPathMatcher("glob:" + pattern);
+
+      return Files.find(
+        path,
+        recurse ? Integer.MAX_VALUE : 1,
+        (p, attrs) -> !attrs.isDirectory() && matcher.matches(p.getFileName())
+      );
+    } catch (IllegalArgumentException | IOException ignored) {
+      return null;
+    }
+  }
 
   public static final class System {
-    public static final String CONFIG_FOLDER;
+    public static final Path CONFIG_FOLDER = Path.of("config");
     public static final String LEGACY_SETTINGS_FOLDER;
     public static final String ARCHIVED_CONFIG_FOLDER;
     public static final String NOTES_FOLDER;
@@ -71,6 +90,12 @@ public final class Paths {
   }
 
   public static final class Saves {
+    public static final Path MINECRAFT = switch (OperatingSystem.CURRENT) {
+      case WINDOWS -> Path.of(java.lang.System.getenv("AppData"), ".minecraft");
+      case MAC_OS -> Path.of(java.lang.System.getProperty("user.home"), "Library", "Application Support", "minecraft");
+      case LINUX -> Path.of(java.lang.System.getProperty("user.home"), ".minecraft");
+    };
+
     public static final String APP_DATA_SHORTCUT;
     private static final String APP_DATA_FOLDER_PATH;
 

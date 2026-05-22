@@ -1,7 +1,21 @@
 package org.mcsr.aatool.configuration;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.mcsr.aatool.Paths;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.Strictness;
 
 public abstract class Config {
   private static TrackingConfig tracking;
@@ -11,11 +25,20 @@ public abstract class Config {
   private static SftpConfig sftp;
   private static NotesConfig notes;
 
-  private static final List<Config> ALL;
+  private static final List<Config> ALL = new ArrayList<>();
 
-  private static final Map<Class, String> FILE_NAMES;
+  private static final Map<Class<? extends Config>, String> FILE_NAMES = Map.of(
+    TrackingConfig.class, "config_tracking.json",
+    MainConfig.class, "config_main.json",
+    OverlayConfig.class, "config_overlay.json",
+    NetworkConfig.class, "config_network.json",
+    SftpConfig.class, "config_sftp.json",
+    NotesConfig.class, "config_notes.json"
+  );
 
-  private final List<SettingInterface<?>> settings;
+  private static final Gson GSON = new GsonBuilder().setStrictness(Strictness.STRICT).create();
+
+  private final List<SettingInterface<?>> settings = new ArrayList<>();
 
   public static TrackingConfig getTracking() { return tracking; }
   public static MainConfig getMain() { return main; }
@@ -24,36 +47,97 @@ public abstract class Config {
   public static SftpConfig getSftp() { return sftp; }
   public static NotesConfig getNotes() { return notes; }
 
-  public static void initialize() {}
+  public static void initialize() {
+    load(TrackingConfig.class);
+    load(MainConfig.class);
+    load(OverlayConfig.class);
+    load(NetworkConfig.class);
+    load(SftpConfig.class);
+    load(NotesConfig.class);
+  }
 
-  public static void saveAll() {}
+  public static void saveAll() {
+    for (Config config : ALL) config.trySave();
+  }
 
-  public static void resetAllToDefaults() {}
+  public static void resetAllToDefaults() {
+    for (Config config : ALL) config.applyDefaultValues();
+    saveAll();
+  }
 
-  public static void clearAllFlags() {}
+  public static void clearAllFlags() {
+    for (Config config : ALL) config.clearFlags();
+  }
 
-  public static boolean trySave(Config config) {}
+  public static boolean trySave(Config config) {
+    try {
+      Files.createDirectories(Paths.System.CONFIG_FOLDER);
+      Path file = Paths.System.CONFIG_FOLDER.resolve(config.getFileName());
 
-  private static <T extends Config> void load() {}
+      try (Writer writer = Files.newBufferedWriter(file)) {
+        GSON.toJson(config, writer);
+        return true;
+      }
+    } catch (IOException | JsonIOException e) {
+      return false;
+    }
+  }
 
-  private static boolean tryParseLegacySetting(XmlNode setting, /*out */String key, /*out */Object value) {}
+  private static <T extends Config> void load(Class<T> classOfT) {
+    T config = null;
 
-  private static void registerConfig(Config config) {}
+    try {
+      Path file = Paths.System.CONFIG_FOLDER.resolve(FILE_NAMES.get(classOfT));
 
-  private static void archiveOldSettings() {}
+      try (Reader reader = Files.newBufferedReader(file)) {
+        config = GSON.fromJson(reader, classOfT);
+      }
 
-  private String getFileName() {}
-  private String getLegacyFileName() {}
+      config.migrateDeprecatedConfigs();
+    } catch (IOException | JsonSyntaxException | JsonIOException ignored) {
+      try {
+        config = classOfT.getDeclaredConstructor().newInstance();
+      } catch (ReflectiveOperationException e) {
+        throw new IllegalArgumentException("classOfT cannot be instantiated", e);
+      }
 
-  public final boolean trySave() {}
+      trySave(config);
+    } finally {
+      registerConfig(config);
+    }
+  }
 
-  public final void registerSetting(SettingInterface<?> setting) {}
+  private static void registerConfig(Config config) {
+    if (config instanceof TrackingConfig trackingConfig) tracking = trackingConfig;
+    else if (config instanceof MainConfig mainConfig) main = mainConfig;
+    else if (config instanceof OverlayConfig overlayConfig) overlay = overlayConfig;
+    else if (config instanceof NetworkConfig networkConfig) net = networkConfig;
+    else if (config instanceof SftpConfig sftpConfig) sftp = sftpConfig;
+    else if (config instanceof NotesConfig notesConfig) notes = notesConfig;
+    else return;
+
+    ALL.add(config);
+  }
+
+  private String getFileName() { return "config_" + this.getId() + ".json"; }
+
+  public final boolean trySave() { return trySave(this); }
+
+  public final void registerSetting(SettingInterface<?> setting) {
+    if (setting != null && !this.settings.contains(setting)) {
+      this.settings.add(setting);
+    }
+  }
 
   protected abstract String getId();
 
   protected void migrateDeprecatedConfigs() {}
 
-  protected void applyDefaultValues() {}
+  protected void applyDefaultValues() {
+    for (SettingInterface<?> setting : this.settings) setting.applyDefault();
+  }
 
-  private void clearFlags() {}
+  private void clearFlags() {
+    for (SettingInterface<?> setting : this.settings) setting.clearFlag();
+  }
 }
