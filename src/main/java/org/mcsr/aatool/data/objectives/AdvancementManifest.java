@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.mcsr.aatool.data.progress.ProgressState;
-import org.mcsr.aatool.utils.Pair;
+import org.mcsr.aatool.utilities.Pair;
 
 public class AdvancementManifest implements Manifest {
   public final Map<String, Advancement> allAdvancements;

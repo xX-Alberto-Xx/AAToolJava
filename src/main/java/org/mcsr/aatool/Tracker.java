@@ -19,7 +19,7 @@ import org.mcsr.aatool.enums.TrackerSource;
 import org.mcsr.aatool.net.Uuid;
 import org.mcsr.aatool.saves.WorldFolder;
 import org.mcsr.aatool.utilities.Timer;
-import org.mcsr.aatool.utils.Pair;
+import org.mcsr.aatool.utilities.Pair;
 
 public final class Tracker {
   public static final AdvancementManifest ADVANCEMENTS;

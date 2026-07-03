@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.mcsr.aatool.net.Uuid;
-import org.mcsr.aatool.utils.Pair;
+import org.mcsr.aatool.utilities.Pair;
 
 public final class Leaderboard {
   public static final Map<Pair<String, String>, Leaderboard> ALL_BOARDS;

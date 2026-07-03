@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.mcsr.aatool.data.progress.WorldState;
 import org.mcsr.aatool.net.Uuid;
-import org.mcsr.aatool.utils.Pair;
+import org.mcsr.aatool.utilities.Pair;
 
 public class CriteriaSet {
   private Uuid closestToCompletion;

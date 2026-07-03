@@ -6,7 +6,7 @@ import org.mcsr.aatool.data.objectives.Advancement;
 import org.mcsr.aatool.data.progress.Contribution;
 import org.mcsr.aatool.data.progress.WorldState;
 import org.mcsr.aatool.net.Uuid;
-import org.mcsr.aatool.utils.Pair;
+import org.mcsr.aatool.utilities.Pair;
 
 public class AdvancementsFolder extends JsonFolder {
   private boolean tryGetCompletionOf(String advancement, JsonStream json, /*out */AdvancementCompletion completion) {}
