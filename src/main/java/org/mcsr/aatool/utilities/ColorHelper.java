@@ -64,7 +64,7 @@ public final class ColorHelper {
       }
 
       return fromRGB(0, 0, 0);
-    } catch (Exception e) {
+    } catch (Exception ignored) {
       return null;
     }
   }

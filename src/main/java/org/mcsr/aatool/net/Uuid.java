@@ -1,6 +1,5 @@
 package org.mcsr.aatool.net;
 
-import java.util.Objects;
 import java.util.UUID;
 
 public class Uuid {
@@ -13,7 +12,7 @@ public class Uuid {
   private final UUID innerID;
 
   public Uuid(String stringForm) {
-    this.string = Objects.requireNonNullElse(stringForm, "");
+    this.string = stringForm != null ? stringForm : "";
     this.shortString = this.string.replace("-", "");
     this.innerID = parseJava(this.string);
   }
@@ -29,9 +28,9 @@ public class Uuid {
     catch (IllegalArgumentException ignored) { return JAVA_EMPTY; }
   }
 
-  public static Uuid parse(String stringForm) {
+  public static Uuid tryParse(String stringForm) {
     try { return new Uuid(UUID.fromString(stringForm)); }
-    catch (IllegalArgumentException ignored) { return EMPTY; }
+    catch (IllegalArgumentException ignored) { return null; }
   }
 
   @Override

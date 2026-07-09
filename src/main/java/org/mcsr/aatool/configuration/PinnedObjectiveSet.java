@@ -8,6 +8,7 @@ import java.util.Set;
 import org.mcsr.aatool.Tracker;
 import org.mcsr.aatool.data.categories.AllAchievements;
 import org.mcsr.aatool.data.categories.AllBlocks;
+import org.mcsr.aatool.utilities.Result;
 import org.mcsr.aatool.utilities.Version;
 
 public class PinnedObjectiveSet {
@@ -120,12 +121,13 @@ public class PinnedObjectiveSet {
     return available;
   }
 
-  public final List<String> tryGetCurrentList() {
+  public final Result<List<String>> tryGetCurrentList() {
     return this.tryGetCurrentList(Tracker.getCategory().getName(), Tracker.getCategory().getCurrentVersion());
   }
 
-  public final List<String> tryGetCurrentList(String category, String version) {
-    return this.pinned.get(this.getKey(category, version));
+  public final Result<List<String>> tryGetCurrentList(String category, String version) {
+    String key = this.getKey(category, version);
+    return new Result<>(this.pinned.containsKey(key), this.pinned.get(key));
   }
 
   public final boolean trySetCurrentList(List<UIPinnedObjectiveFrame> frames) {

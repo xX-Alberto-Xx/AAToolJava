@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.DisplayMode;
 import java.awt.GraphicsEnvironment;
 import java.util.Map;
-import java.util.Objects;
 
 import org.mcsr.aatool.Tracker;
 import org.mcsr.aatool.data.categories.AllAdvancements;
@@ -128,7 +127,8 @@ public class MainConfig extends Config {
   }
 
   private static Color hex(String hex) {
-    return Objects.requireNonNullElse(ColorHelper.tryGetHexColor(hex), Color.WHITE);
+    Color color = ColorHelper.tryGetHexColor(hex);
+    return color != null ? color : Color.WHITE;
   }
 
   public final boolean useCompactStyling() {

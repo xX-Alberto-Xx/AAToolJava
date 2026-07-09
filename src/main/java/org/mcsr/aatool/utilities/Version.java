@@ -4,13 +4,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class Version {
-  private static final Pattern PATTERN = Pattern.compile("([0-9]+)\\.([0-9]+)(?:\\.([0-9]+)(?:\\.([0-9]+)))");
+  private static final Pattern PATTERN = Pattern.compile("([0-9]+)\\.([0-9]+)(?:\\.([0-9]+)(?:\\.([0-9]+))?)?");
 
   public final int major;
   public final int minor;
   public final int build;
   public final int revision;
 
+  public Version() { this(0, 0, -1, -1); }
+  public Version(int major, int minor) { this(major, minor, -1, -1); }
   public Version(int major, int minor, int build, int revision) {
     this.major = major;
     this.minor = minor;
@@ -32,8 +34,52 @@ public final class Version {
     return this.major < major || this.major == major && this.minor < minor;
   }
 
+  public boolean isAtMost(Version other) {
+    return this.major < other.major || this.major == other.major && (
+      this.minor < other.minor || this.minor == other.minor && (
+        this.build < other.build || this.build == other.build && (
+          this.revision <= other.revision
+        )
+      )
+    );
+  }
+
+  public boolean isAfter(Version other) {
+    return this.major > other.major || this.major == other.major && (
+      this.minor > other.minor || this.minor == other.minor && (
+        this.build > other.build || this.build == other.build && (
+          this.revision > other.revision
+        )
+      )
+    );
+  }
+
+  public boolean isAfter(int major, int minor, int build) {
+    return this.major > major || this.major == major && (
+      this.minor > minor || this.minor == minor && (
+        this.build > build || this.build == build && (
+          this.revision >= 0
+        )
+      )
+    );
+  }
+
+  public boolean isAtLeast(Version other) {
+    return this.major > other.major || this.major == other.major && (
+      this.minor > other.minor || this.minor == other.minor && (
+        this.build > other.build || this.build == other.build && (
+          this.revision >= other.revision
+        )
+      )
+    );
+  }
+
+  public boolean isAtLeast(int major, int minor) {
+    return this.major > major || this.major == major && this.minor >= minor;
+  }
+
   public boolean isNot(int major, int minor) {
-    return this.major != major || this.minor != minor || this.build != 0 || this.revision != 0;
+    return this.major != major || this.minor != minor || this.build != -1 || this.revision != -1;
   }
 
   public static Version tryParse(String input) {
@@ -47,7 +93,7 @@ public final class Version {
       int minor = Integer.parseInt(matcher.group(2));
 
       String buildDigits = matcher.group(3);
-      if (buildDigits == null) return new Version(major, minor, -1, -1);
+      if (buildDigits == null) return new Version(major, minor);
 
       int build = Integer.parseInt(buildDigits);
       String revisionDigits = matcher.group(4);

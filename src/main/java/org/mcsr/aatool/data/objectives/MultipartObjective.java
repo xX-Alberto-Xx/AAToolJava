@@ -1,13 +1,16 @@
 package org.mcsr.aatool.data.objectives;
 
+import java.util.HashSet;
 import java.util.Set;
 
+import org.mcsr.aatool.Tracker;
 import org.mcsr.aatool.data.progress.ProgressState;
+import org.mcsr.aatool.utilities.Version;
 
 public abstract class MultipartObjective extends ComplexObjective {
-  private static final Version VILLAGE_AND_PILLAGE_UPDATE;
+  private static final Version VILLAGE_AND_PILLAGE_UPDATE = new Version(1, 14);
 
-  protected final Set<String> remainingCriteria;
+  protected final Set<String> remainingCriteria = new HashSet<>();
 
   protected int requiredCriteria;
   protected int currentCriteria;
@@ -21,36 +24,79 @@ public abstract class MultipartObjective extends ComplexObjective {
   protected abstract String getModernBaseTexture();
   protected abstract String getOldBaseTexture();
 
-  protected String longStatusComplete() {}
-  protected String longStatusLast() {}
-  protected String longStatusNormal() {}
+  protected String longStatusComplete() {
+    return "All\0" + this.getCriterion() + "s\n" + this.getPastAction();
+  }
 
-  protected Version getTextureUpdateVersion() {}
+  protected String longStatusLast() {
+    return "Last\0" + this.getCriterion() + ":\n" + this.remainingCriteria.iterator().next();
+  }
 
-  protected final boolean useModernTexture() {}
+  protected String longStatusNormal() {
+    return this.getAction() + '\0' + this.getCriterion() + "s\n" + this.currentCriteria + "\0/\0" + this.requiredCriteria;
+  }
 
-  protected final String getCurrentBaseTexture() {}
+  protected Version getTextureUpdateVersion() { return VILLAGE_AND_PILLAGE_UPDATE; }
 
-  protected final boolean isOnLastCriterion() {}
+  protected final boolean useModernTexture() {
+    Version current = Version.tryParse(Tracker.getCurrentVersion());
+    return current == null || current.isAtLeast(this.getTextureUpdateVersion());
+  }
 
-  protected final boolean isAllCriteriaCompleted() {}
+  protected final String getCurrentBaseTexture() {
+    return this.useModernTexture() ? this.getModernBaseTexture() : this.getOldBaseTexture();
+  }
+
+  protected final boolean isOnLastCriterion() { return this.remainingCriteria.size() == 1; }
+
+  protected final boolean areAllCriteriaCompleted() {
+    return this.requiredCriteria > 0 && this.currentCriteria >= this.requiredCriteria;
+  }
 
   @Override
-  protected void updateAdvancedState(ProgressState progress) {}
+  protected void updateAdvancedState(ProgressState progress) {
+    // TODO: Tracker
+  }
 
-  protected void buildRemainingCriteriaList(CriteriaSet criteria) {}
+  protected void buildRemainingCriteriaList(CriteriaSet criteria) {
+    this.currentCriteria = 0;
+    this.requiredCriteria = criteria.getCount();
+    this.remainingCriteria.clear();
+
+    for (Criterion criterion : criteria.all.values()) {
+      if (criterion.isComplete()) {
+        this.currentCriteria++;
+      } else {
+        this.remainingCriteria.add(criterion.name);
+        this.lastCriterionIcon = criterion.icon;
+      }
+    }
+  }
 
   @Override
-  protected void clearAdvancedState() {}
+  protected void clearAdvancedState() {
+    this.currentCriteria = 0;
+    this.remainingCriteria.clear();
+
+    // TODO: Tracker
+  }
 
   @Override
-  protected String getShortStatus() {}
+  protected String getShortStatus() { return this.currentCriteria + " / " + this.requiredCriteria; }
 
   protected final void updateRequired() {}
 
   @Override
-  protected String getLongStatus() {}
+  protected String getLongStatus() {
+    return this.completionOverride ? this.longStatusComplete()
+         : this.isOnLastCriterion() ? this.longStatusLast()
+         : this.longStatusNormal();
+  }
 
   @Override
-  protected String getCurrentIcon() {}
+  protected String getCurrentIcon() {
+    return this.completionOverride || !this.isOnLastCriterion()
+           ? this.getCurrentBaseTexture()
+           : this.lastCriterionIcon;
+  }
 }

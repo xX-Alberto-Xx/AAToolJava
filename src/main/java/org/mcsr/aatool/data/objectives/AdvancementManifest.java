@@ -1,41 +1,135 @@
 package org.mcsr.aatool.data.objectives;
 
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import org.mcsr.aatool.Paths;
+import org.mcsr.aatool.Tracker;
+import org.mcsr.aatool.data.categories.AllAchievements;
+import org.mcsr.aatool.data.categories.AllSmithingTemplates;
 import org.mcsr.aatool.data.progress.ProgressState;
+import org.mcsr.aatool.utilities.JsonUtils;
 import org.mcsr.aatool.utilities.Pair;
+import org.mcsr.aatool.utilities.Result;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 public class AdvancementManifest implements Manifest {
-  public final Map<String, Advancement> allAdvancements;
-  public final Map<String, Advancement> remainingAdvancements;
-  public final Map<String, Set<Advancement>> groups;
-  public final Map<Pair<String, String>, Criterion> allCriteria;
-  public final Map<Pair<String, String>, Criterion> remainingCriteria;
+  public final Map<String, Advancement> allAdvancements = new HashMap<>();
+  public final Map<String, Advancement> remainingAdvancements = new HashMap<>();
+  public final Map<String, Set<Advancement>> groups = new HashMap<>();
+  public final Map<Pair<String, String>, Criterion> allCriteria = new HashMap<>();
+  public final Map<Pair<String, String>, Criterion> remainingCriteria = new HashMap<>();
 
   private int combinedCompletedCount;
 
-  public AdvancementManifest() {}
-
   public final int getCombinedCompletedCount() { return this.combinedCompletedCount; }
 
-  public final int getCount() {}
+  public final int getCount() { return this.allAdvancements.size(); }
 
-  public final boolean tryGet(String advId, /*out */Advancement advancement) {}
+  public final Result<Advancement> tryGetAdvancement(String advId) {
+    return new Result<>(this.allAdvancements.containsKey(advId), this.allAdvancements.get(advId));
+  }
 
-  public final boolean tryGet(String advId, String critId, /*out */Criterion criterion) {}
+  public final Result<Criterion> tryGetCriterion(String advId, String critId) {
+    Pair<String, String> key = new Pair<>(advId, critId);
+    return new Result<>(this.allCriteria.containsKey(key), this.allCriteria.get(key));
+  }
 
-  public final boolean tryGet(String groupId, /*out */Set<Advancement> group) {}
+  public final Result<Set<Advancement>> tryGetGroup(String groupId) {
+    return new Result<>(this.groups.containsKey(groupId), this.groups.get(groupId));
+  }
 
-  public final void clearObjectives() {}
+  @Override
+  public final void clearObjectives() {
+    this.groups.clear();
+    this.allAdvancements.clear();
+    this.remainingAdvancements.clear();
+    this.allCriteria.clear();
+    this.remainingCriteria.clear();
+    this.combinedCompletedCount = 0;
+  }
 
-  public void refreshObjectives() {}
+  @Override
+  public void refreshObjectives() {
+    this.clearObjectives();
+    if (Tracker.getCategory() instanceof AllAchievements) return;
 
-  private void parseFile(String file) {}
+    if (Tracker.getCategory() instanceof AllSmithingTemplates) {
+      this.parseFile(Paths.System.getArmorTrimsFile());
+      return;
+    }
 
-  private void requireAdvancement(XmlNode node, Set<Advancement> group) {}
+    // Try to get list of all advancements' objective files
+    Stream<Path> files = Paths.tryGetAllFiles(Paths.System.getAdvancementsFolder(), "*.json", false);
 
-  public final void updateState(ProgressState progress) {}
+    if (files != null) {
+      // Iterate advancement objective files for current game version
+      try (files) { files.forEach(this::parseFile); }
+    }
+  }
 
-  public final void refreshRemainingCriteria() {}
+  private void parseFile(Path file) {
+    JsonArray advancements = JsonUtils.tryParseFile(file, JsonArray.class);
+    if (advancements == null) return;
+
+    // Add advancement group
+    Set<Advancement> group = new HashSet<>();
+
+    for (JsonElement advancementElem : advancements) {
+      this.requireAdvancement(advancementElem.getAsJsonObject(), group);
+    }
+
+    String fileName = file.getFileName().toString();
+    int dotIndex = fileName.lastIndexOf('.');
+    this.groups.put(dotIndex != -1 ? fileName.substring(0, dotIndex) : fileName, group);
+  }
+
+  private void requireAdvancement(JsonObject obj, Set<Advancement> group) {
+    Advancement advancement = new Advancement(obj);
+    this.allAdvancements.put(advancement.id, advancement);
+    group.add(advancement);
+
+    if (advancement.hasCriteria()) {
+      for (Map.Entry<String, Criterion> criterion : advancement.getCriteria().all.entrySet()) {
+        this.allCriteria.put(new Pair<>(advancement.id, criterion.getKey()), criterion.getValue());
+      }
+    }
+  }
+
+  @Override
+  public final void updateState(ProgressState progress) {
+    this.remainingAdvancements.clear();
+    this.combinedCompletedCount = 0;
+
+    for (Map.Entry<String, Advancement> advancement : this.allAdvancements.entrySet()) {
+      // Update advancement and completion count
+      Advancement value = advancement.getValue();
+      value.updateState(progress);
+
+      if (value.isComplete()) this.combinedCompletedCount++;
+      else this.remainingAdvancements.put(advancement.getKey(), value);
+    }
+
+    this.refreshRemainingCriteria();
+  }
+
+  public final void refreshRemainingCriteria() {
+    this.remainingCriteria.clear();
+
+    // Update global remaining criteria for overlay
+    for (Map.Entry<Pair<String, String>, Criterion> criterion : this.allCriteria.entrySet()) {
+      Criterion value = criterion.getValue();
+
+      if (!value.owner.isComplete() && !value.completedByDesignated()) {
+        this.remainingCriteria.put(criterion.getKey(), value);
+      }
+    }
+  }
 }

@@ -1,12 +1,11 @@
 package org.mcsr.aatool.configuration;
 
 import java.awt.Color;
-import java.util.Objects;
 
 import org.mcsr.aatool.enums.WindowSnap;
-import org.mcsr.aatool.utilities.ArrayUtils;
 import org.mcsr.aatool.utilities.ColorHelper;
 import org.mcsr.aatool.utilities.Point;
+import org.mcsr.aatool.utilities.SearchUtils;
 import org.mcsr.aatool.utilities.Strings;
 
 public class OverlayConfig extends Config {
@@ -92,7 +91,8 @@ public class OverlayConfig extends Config {
   protected String getId() { return "overlay"; }
 
   private static Color hex(String hex) {
-    return Objects.requireNonNullElse(ColorHelper.tryGetHexColor(hex), Color.WHITE);
+    Color color = ColorHelper.tryGetHexColor(hex);
+    return color != null ? color : Color.WHITE;
   }
 
   @Override
@@ -113,7 +113,7 @@ public class OverlayConfig extends Config {
       return this.frameStyle.getValue();
     }
 
-    if (!Strings.isNullOrEmpty(currentStyle) && ArrayUtils.contains(this.prideStyles, currentStyle)) {
+    if (!Strings.isNullOrEmpty(currentStyle) && SearchUtils.contains(this.prideStyles, currentStyle)) {
       return currentStyle;
     }
 

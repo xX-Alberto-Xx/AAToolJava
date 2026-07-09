@@ -2,25 +2,45 @@ package org.mcsr.aatool.data.categories;
 
 import java.util.List;
 
-public class AllSmithingTemplates extends SingleAdvancement {
-  public static final List<String> SUPPORTED_VERSIONS;
+import org.mcsr.aatool.Tracker;
+import org.mcsr.aatool.data.objectives.ArmorTrimCriterion;
+import org.mcsr.aatool.data.objectives.Criterion;
 
-  private static final String ID;
+public class AllSmithingTemplates extends SingleAdvancement {
+  public static final List<String> SUPPORTED_VERSIONS = List.of("1.20 Snapshot");
+
+  private static final String ID = "custom:all_smithing_templates";
 
   private int recipesObtained;
 
-  public AllSmithingTemplates() {}
+  public AllSmithingTemplates() {
+    this.name = "All Smithing Templates";
+    this.acronym = "AST";
+    this.objective = "Templates";
+    this.action = "Obtained";
+  }
 
   public final int getRecipesObtained() { return this.recipesObtained; }
 
   @Override
-  public Iterable<String> getSupportedVersions() {}
+  public Iterable<String> getSupportedVersions() { return SUPPORTED_VERSIONS; }
   @Override
-  public int getCompletedCount() {}
+  public int getCompletedCount() { return this.recipesObtained; }
 
   @Override
-  public void loadObjectives() {}
+  public void loadObjectives() {
+    Tracker.ADVANCEMENTS.refreshObjectives();
+    this.requirement = Tracker.ADVANCEMENTS.tryGetAdvancement(ID).value;
+  }
 
   @Override
-  public void update() {}
+  public void update() {
+    super.update();
+    this.recipesObtained = 0;
+    if (this.requirement == null) return;
+
+    for (Criterion criterion : this.requirement.getCriteria().all.values()) {
+      if (((ArmorTrimCriterion) criterion).isObtained()) this.recipesObtained++;
+    }
+  }
 }

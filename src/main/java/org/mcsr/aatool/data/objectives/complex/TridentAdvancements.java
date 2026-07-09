@@ -4,23 +4,34 @@ import org.mcsr.aatool.data.objectives.ComplexObjective;
 import org.mcsr.aatool.data.progress.ProgressState;
 
 public class TridentAdvancements extends ComplexObjective {
-  private static final String ATJ;
-  private static final String VVF;
+  private static final String ATJ = "minecraft:adventure/throw_trident";
+  private static final String VVF = "minecraft:adventure/very_very_frightening";
 
-  public boolean atjComplete;
-  public boolean vvfComplete;
+  private boolean atjComplete;
+  private boolean vvfComplete;
 
-  public TridentAdvancements() {}
-
-  @Override
-  protected void updateAdvancedState(ProgressState progress) {}
+  public TridentAdvancements() { this.icon = "trident"; }
 
   @Override
-  protected void clearAdvancedState() {}
+  protected void updateAdvancedState(ProgressState progress) {
+    this.atjComplete = progress.advancementCompleted(ATJ);
+    this.vvfComplete = progress.advancementCompleted(VVF);
+    this.completionOverride = this.atjComplete && this.vvfComplete;
+  }
 
   @Override
-  protected String getLongStatus() {}
+  protected void clearAdvancedState() {
+    this.atjComplete = false;
+    this.vvfComplete = false;
+  }
 
   @Override
-  protected String getShortStatus() {}
+  protected String getLongStatus() { return this.getShortStatus(); }
+
+  @Override
+  protected String getShortStatus() {
+    return this.atjComplete && !this.vvfComplete ? "VVF"
+         : this.vvfComplete && !this.atjComplete ? "ATJ"
+         : "ATJ + VVF";
+  }
 }

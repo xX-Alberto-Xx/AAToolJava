@@ -4,26 +4,39 @@ import org.mcsr.aatool.data.objectives.ComplexObjective;
 import org.mcsr.aatool.data.progress.ProgressState;
 
 public class WaxOnOff extends ComplexObjective {
-  private static final String WAX_ON;
-  private static final String WAX_OFF;
+  private static final String WAX_ON = "minecraft:husbandry/wax_on";
+  private static final String WAX_OFF = "minecraft:husbandry/wax_off";
 
-  public boolean waxOnComplete;
-  public boolean waxOffComplete;
+  private boolean waxOnComplete;
+  private boolean waxOffComplete;
 
-  public WaxOnOff() {}
-
-  @Override
-  protected void updateAdvancedState(ProgressState progress) {}
+  public WaxOnOff() { this.icon = "wax_on"; }
 
   @Override
-  protected void clearAdvancedState() {}
+  protected void updateAdvancedState(ProgressState progress) {
+    this.waxOnComplete = progress.advancementCompleted(WAX_ON);
+    this.waxOffComplete = progress.advancementCompleted(WAX_OFF);
+    this.completionOverride = this.waxOnComplete && this.waxOffComplete;
+  }
 
   @Override
-  protected String getLongStatus() {}
+  protected void clearAdvancedState() {
+    this.waxOnComplete = false;
+    this.waxOffComplete = false;
+  }
 
   @Override
-  protected String getShortStatus() {}
+  protected String getLongStatus() { return this.getShortStatus(); }
 
   @Override
-  protected String getCurrentIcon() {}
+  protected String getShortStatus() {
+    return this.waxOnComplete && !this.waxOffComplete ? "Wax Off"
+         : this.waxOffComplete && !this.waxOnComplete ? "Wax On"
+         : "Wax On+Off";
+  }
+
+  @Override
+  protected String getCurrentIcon() {
+    return this.waxOnComplete && !waxOffComplete ? "wax_off" : "wax_on";
+  }
 }

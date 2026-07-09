@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.stream.Stream;
 
+import org.mcsr.aatool.configuration.Config;
 import org.mcsr.aatool.net.Uuid;
 import org.mcsr.aatool.utilities.OperatingSystem;
 
@@ -27,24 +28,27 @@ public final class Paths {
   }
 
   public static final class System {
+    // Constant settings paths
     public static final Path CONFIG_FOLDER = Path.of("config");
     public static final String LEGACY_SETTINGS_FOLDER;
     public static final String ARCHIVED_CONFIG_FOLDER;
     public static final String NOTES_FOLDER;
 
-    public static final String CACHE_FOLDER;
-    public static final String LEADERBOARDS_FOLDER;
-    public static final String BLOCK_CHECKLISTS_FOLDER;
-    public static final String PROFILE_PICTURES_CACHE_FOLDER;
-    public static final String PROFILE_DETAILS_CACHE_FOLDER;
+    public static final Path CACHE_FOLDER = Path.of("assets", "cache");
+    public static final Path LEADERBOARDS_FOLDER = CACHE_FOLDER.resolve("leaderboards");
+    public static final Path BLOCK_CHECKLISTS_FOLDER = CACHE_FOLDER.resolve("block_checklists");
+    private static final Path PROFILES_CACHE_FOLDER = CACHE_FOLDER.resolve("runner_profiles");
+    public static final Path PROFILE_PICTURES_CACHE_FOLDER = PROFILES_CACHE_FOLDER.resolve("pictures");
+    public static final Path PROFILE_DETAILS_CACHE_FOLDER = PROFILES_CACHE_FOLDER.resolve("details");
+    // Remote world temp folder
     public static final String SFTP_WORLDS_FOLDER;
 
     public static final String MANUAL_CHECKLIST_FOLDER;
 
-    public static final String DATA_FOLDER;
+    // Constant assets paths
     public static final String LOGS_FOLDER;
-    public static final String ASSETS_FOLDER;
-    public static final String OBJECTIVES_FOLDER;
+    public static final Path ASSETS_FOLDER = Path.of("assets");
+    public static final Path OBJECTIVES_FOLDER = ASSETS_FOLDER.resolve("objectives");
     public static final String VIEWS_FOLDER;
     public static final String TEMPLATES_FOLDER;
     public static final String SPRITES_FOLDER;
@@ -56,37 +60,63 @@ public final class Paths {
     public static final String MAIN_ICON;
     public static final String UPDATE_ICON;
 
+    // Constant URLs
     public static final String UPDATE_EXECUTABLE;
 
     private System() {}
 
-    public static String getObjectiveFolder() {}
-    public static String getAdvancementsFolder() {}
-    public static String getAchievementsFile() {}
-    public static String getDeathMessagesFile() {}
-    public static String getArmorTrimsFile() {}
+    // Dependant paths
+
+    public static Path getObjectiveFolder() {
+      return OBJECTIVES_FOLDER.resolve(Config.getTracking().gameVersion.getValue());
+    }
+
+    public static Path getAdvancementsFolder() { return getObjectiveFolder().resolve("advancements"); }
+    public static Path getAchievementsFile() { return getObjectiveFolder().resolve("achievements.json"); }
+    public static Path getDeathMessagesFile() { return getObjectiveFolder().resolve("deaths.json"); }
+    public static Path getArmorTrimsFile() { return getObjectiveFolder().resolve("trims.json"); }
     public static String getPotionsFile() {}
 
+    // File getters
     public static String getCrashLogFile() {}
     public static String getCreditsFile() {}
 
-    public static String getHistoryFile() {}
+    public static Path getHistoryFile() {
+      return LEADERBOARDS_FOLDER.resolve("history_aa_1.16.csv");
+    }
 
-    public static String getChallengesFile() {}
+    public static Path getChallengesFile() {
+      return LEADERBOARDS_FOLDER.resolve("leaderboard_challenges.csv");
+    }
 
-    public static String getSupportersFile() {}
+    public static Path getSupportersFile() {
+      return LEADERBOARDS_FOLDER.resolve("supporters.csv");
+    }
 
-    public static String leaderboardFile(String fileName) {}
+    public static Path leaderboardFile(String fileName) {
+      return LEADERBOARDS_FOLDER.resolve(fileName + ".csv");
+    }
 
     public static String blockChecklistFile(int instance, String worldName) {}
 
-    public static String speedrunDotComLeaderboardFile(String category, String version) {}
+    public static Path speedrunDotComLeaderboardFile(String category, String version) {
+      return LEADERBOARDS_FOLDER.resolve("speedrundotcom_leaderboard_" + category + '_' + version + ".json");
+    }
 
-    public static String speedrunDotComRecordFile(boolean rsg, boolean aa, String version) {}
+    public static Path speedrunDotComRecordFile(boolean rsg, boolean aa, String version) {
+      return LEADERBOARDS_FOLDER.resolve(
+        (aa ? "aa_wr_ssg_" : rsg ? "any_percent_wr_rsg_" : "any_percent_wr_ssg_")
+        + version + ".txt"
+      );
+    }
 
-    public static String speedrunDotComProfilePicture(String id) {}
+    public static Path speedrunDotComProfilePicture(String id) {
+      return PROFILE_PICTURES_CACHE_FOLDER.resolve(id + ".png");
+    }
 
-    public static String speedrunDotComProfileJson(String idOrName) {}
+    public static Path speedrunDotComProfileJson(String idOrName) {
+      return PROFILE_DETAILS_CACHE_FOLDER.resolve(idOrName + ".json");
+    }
   }
 
   public static final class Saves {
@@ -120,16 +150,16 @@ public final class Paths {
 
     public static final String PAY_PAL;
 
-    public static final String AA_SHEET;
-    public static final String AA_PAGE16;
+    public static final String AA_SHEET = "107ijqjELTQQ29KW4phUmtvYFTX9-pfHsjb18TKoWACk";
+    public static final String AA_PAGE16 = "1706556435";
     public static final String AA_PAGE_OTHERS;
 
-    public static final String AB_SHEET;
-    public static final String AB_PAGE21;
-    public static final String AB_PAGE20;
-    public static final String AB_PAGE19;
-    public static final String AB_PAGE18;
-    public static final String AB_PAGE16;
+    public static final String AB_SHEET = "1RnN6lE3yi5S_5PBuxMXdWNvN3HayP3054M3Qud_p9BU";
+    public static final String AB_PAGE21 = "27712269";
+    public static final String AB_PAGE20 = "1664598957";
+    public static final String AB_PAGE19 = "1912774860";
+    public static final String AB_PAGE18 = "1706556435";
+    public static final String AB_PAGE16 = "1572184167";
     public static final String AB_PAGE_CHALLENGES;
 
     public static final String SUPPORTER_SHEET;
@@ -142,7 +172,9 @@ public final class Paths {
 
     private Web() {}
 
-    public static String getUuidUrl(String name) {}
+    public static String getUuidUrl(String name) {
+      return "https://api.mojang.com/users/profiles/minecraft/" + name;
+    }
 
     public static String getNameUrl(String uuid) {}
 

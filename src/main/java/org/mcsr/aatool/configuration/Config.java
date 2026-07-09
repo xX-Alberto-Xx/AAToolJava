@@ -10,12 +10,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.mcsr.aatool.Paths;
+import org.mcsr.aatool.utilities.JsonUtils;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.Strictness;
 
 public abstract class Config {
   private static TrackingConfig tracking;
@@ -35,8 +33,6 @@ public abstract class Config {
     SftpConfig.class, "config_sftp.json",
     NotesConfig.class, "config_notes.json"
   );
-
-  private static final Gson GSON = new GsonBuilder().setStrictness(Strictness.STRICT).create();
 
   private final List<SettingInterface<?>> settings = new ArrayList<>();
 
@@ -75,10 +71,10 @@ public abstract class Config {
       Path file = Paths.System.CONFIG_FOLDER.resolve(config.getFileName());
 
       try (Writer writer = Files.newBufferedWriter(file)) {
-        GSON.toJson(config, writer);
+        JsonUtils.STRICT_GSON.toJson(config, writer);
         return true;
       }
-    } catch (IOException | JsonIOException e) {
+    } catch (IOException | JsonIOException ignored) {
       return false;
     }
   }
@@ -90,15 +86,15 @@ public abstract class Config {
       Path file = Paths.System.CONFIG_FOLDER.resolve(FILE_NAMES.get(classOfT));
 
       try (Reader reader = Files.newBufferedReader(file)) {
-        config = GSON.fromJson(reader, classOfT);
+        config = JsonUtils.STRICT_GSON.fromJson(reader, classOfT);
       }
 
       config.migrateDeprecatedConfigs();
     } catch (IOException | JsonSyntaxException | JsonIOException ignored) {
       try {
-        config = classOfT.getDeclaredConstructor().newInstance();
+        config = classOfT.getConstructor().newInstance();
       } catch (ReflectiveOperationException e) {
-        throw new IllegalArgumentException("classOfT cannot be instantiated", e);
+        throw new AssertionError(classOfT.getSimpleName() + " cannot be instantiated", e);
       }
 
       trySave(config);
