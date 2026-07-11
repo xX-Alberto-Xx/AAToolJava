@@ -1,27 +1,37 @@
 package org.mcsr.aatool.net;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import org.mcsr.aatool.utilities.JsonUtils;
+
 public final class Lobby {
-  public final Map<Uuid, User> users;
-  public final Map<String, Uuid> designations;
-  private Uuid hostId;
+  public final Map<Uuid, User> users = new HashMap<>();
+  public final Map<String, Uuid> designations = new HashMap<>();
+  private Uuid hostId = Uuid.EMPTY;
 
-  public Lobby() {}
+  public int getUserCount() { return this.users.size(); }
 
-  public final int getUserCount() {}
+  public User tryGetHost() { return this.users.get(this.hostId); }
 
-  public final boolean tryGetHost(/*out */User host) {}
+  public void setHost(User user) {
+    this.users.put(user.id, user);
+    this.hostId = user.id;
+  }
 
-  public final void setHost(User user) {}
+  public static Lobby fromJsonString(String jsonString) {
+    Lobby lobby = JsonUtils.STRICT_GSON.fromJson(jsonString, Lobby.class);
 
-  public static Lobby fromJsonString(String jsonString) {}
+    // Attempt to load player identities
+    for (Uuid id : lobby.users.keySet()) Player.fetchIdentityAsync(id);
+    return lobby;
+  }
 
-  public final String toJsonString() {}
+  public String toJsonString() { return JsonUtils.STRICT_GSON.toJson(this); }
 
-  public final boolean tryGetUser(Uuid id, /*out */User user) {}
+  public User tryGetUser(Uuid id) { return this.users.get(id); }
 
-  public final void add(User user) {}
+  public void add(User user) { this.users.put(user.id, user); }
 
-  public final void remove(User user) {}
+  public void remove(User user) { this.users.remove(user.id); }
 }
