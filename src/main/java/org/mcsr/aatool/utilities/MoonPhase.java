@@ -2,7 +2,7 @@ package org.mcsr.aatool.utilities;
 
 import java.time.Duration;
 
-public class MoonPhase {
+public final class MoonPhase {
   private static final long DAY_SECONDS = 1200;
   private static final Phase[] PHASES = Phase.values();
 

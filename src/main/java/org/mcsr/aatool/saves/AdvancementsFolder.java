@@ -28,7 +28,7 @@ public class AdvancementsFolder extends JsonFolder {
 
     private DateTime timestamp;
 
-    public AdvancementCompletion(JsonStream json, dynamic token, String advancement) {}
+    private AdvancementCompletion(JsonStream json, dynamic token, String advancement) {}
 
     public final DateTime getTimestamp() { return this.timestamp; }
 
