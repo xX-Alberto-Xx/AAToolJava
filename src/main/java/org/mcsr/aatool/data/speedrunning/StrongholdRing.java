@@ -64,8 +64,8 @@ public class StrongholdRing {
     int optimalBlindDistance = this.getOptimalBlindDistance();
 
     return new Point(
-      (int) Math.round(optimalBlindDistance * Math.cos(angle)),
-      (int) Math.round(optimalBlindDistance * Math.sin(angle))
+      (int) Math.rint(optimalBlindDistance * Math.cos(angle)),
+      (int) Math.rint(optimalBlindDistance * Math.sin(angle))
     );
   }
 }

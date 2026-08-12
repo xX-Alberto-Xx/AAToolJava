@@ -7,8 +7,8 @@ import org.mcsr.aatool.net.Uuid;
 public class Completion {
   public static final Completion EMPTY = new Completion(Uuid.EMPTY, Instant.MIN);
 
-  public Uuid player;
-  public Instant timestamp;
+  public final Uuid player;
+  public final Instant timestamp;
 
   public Completion(Uuid player, Instant timestamp) {
     this.player = player;

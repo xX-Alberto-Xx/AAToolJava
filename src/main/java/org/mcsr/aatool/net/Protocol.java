@@ -8,7 +8,7 @@ public final class Protocol {
   public static final int BUFFER_SIZE = 1024 * 1000;
   public static final char COMMAND_PREFIX = '/';
   public static final char DATA_PREFIX = '$';
-  public static final char TOKEN_DELIMITER = '\n';
+  public static final String TOKEN_DELIMITER = "\n";
   public static final String HOST_KEY = "$host";
 
   private Protocol() {}

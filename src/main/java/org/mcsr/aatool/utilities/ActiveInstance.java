@@ -1,5 +1,7 @@
 package org.mcsr.aatool.utilities;
 
+import java.nio.file.Path;
+
 import org.mcsr.aatool.Time;
 
 public final class ActiveInstance {
@@ -8,8 +10,8 @@ public final class ActiveInstance {
   private static final String NATIVES_FLAG;
 
   private static String dotMinecraftPath;
-  private static String savesPath;
-  private static String practiceSavesPath;
+  private static Path savesPath;
+  private static Path practiceSavesPath;
   private static String logFile;
   private static int number;
   private static int lastActiveId;
@@ -24,8 +26,8 @@ public final class ActiveInstance {
   private ActiveInstance() {}
 
   public static String getDotMinecraftPath() { return dotMinecraftPath; }
-  public static String getSavesPath() { return savesPath; }
-  public static String getPracticeSavesPath() { return practiceSavesPath; }
+  public static Path getSavesPath() { return savesPath; }
+  public static Path getPracticeSavesPath() { return practiceSavesPath; }
   public static String getLogFile() { return logFile; }
   public static int getNumber() { return number; }
   public static int getLastActiveId() { return lastActiveId; }

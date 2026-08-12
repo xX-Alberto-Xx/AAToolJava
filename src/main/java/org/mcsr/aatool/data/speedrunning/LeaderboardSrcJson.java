@@ -2,7 +2,6 @@ package org.mcsr.aatool.data.speedrunning;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +69,7 @@ public class LeaderboardSrcJson {
           ) * 1000));
 
           try {
-            parsedRun.date = LocalDate.parse(run.getAsJsonPrimitive("date").getAsString(), DateTimeFormatter.ISO_LOCAL_DATE);
+            parsedRun.date = LocalDate.parse(run.getAsJsonPrimitive("date").getAsString());
           } catch (DateTimeParseException ignored) {
             parsedRun.date = LocalDate.MIN;
           }
@@ -88,10 +87,8 @@ public class LeaderboardSrcJson {
 
       return new LeaderboardSrcJson(runList);
     } catch (
-      JsonSyntaxException |
-      NullPointerException |
-      ClassCastException |
-      IllegalStateException ignored
+      JsonSyntaxException | NullPointerException |
+      ClassCastException | IllegalStateException ignored
     ) {
       return null;
     }

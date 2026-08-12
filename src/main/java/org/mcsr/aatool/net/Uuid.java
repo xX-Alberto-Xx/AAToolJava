@@ -30,7 +30,7 @@ public class Uuid {
 
   public static Uuid tryParse(String stringForm) {
     try { return new Uuid(UUID.fromString(stringForm)); }
-    catch (IllegalArgumentException ignored) { return null; }
+    catch (NullPointerException | IllegalArgumentException ignored) { return null; }
   }
 
   @Override

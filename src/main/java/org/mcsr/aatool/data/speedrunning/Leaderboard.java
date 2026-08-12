@@ -509,12 +509,8 @@ public final class Leaderboard {
 
       return true;
     } catch (
-      JsonSyntaxException |
-      NullPointerException |
-      ClassCastException |
-      IndexOutOfBoundsException |
-      IllegalStateException |
-      NumberFormatException ignored
+      JsonSyntaxException | NullPointerException | ClassCastException |
+      IndexOutOfBoundsException | IllegalStateException | NumberFormatException ignored
     ) {
       return false;
     }

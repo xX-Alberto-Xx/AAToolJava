@@ -1,7 +1,5 @@
 package org.mcsr.aatool.data.objectives;
 
-import java.util.Objects;
-
 import org.mcsr.aatool.Tracker;
 import org.mcsr.aatool.configuration.Config;
 import org.mcsr.aatool.data.progress.ProgressState;
@@ -69,7 +67,7 @@ public class Advancement extends Objective {
   public final void designate(Uuid id) {
     if (id.equals(Uuid.EMPTY)) return;
 
-    if (!Objects.equals(id, this.designatedPlayer) || this.designationLinked) {
+    if (this.designationLinked || !id.equals(this.designatedPlayer)) {
       this.designatedPlayer = id;
       Tracker.invalidateDesignations();
 

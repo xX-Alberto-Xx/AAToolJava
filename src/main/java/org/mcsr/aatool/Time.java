@@ -29,7 +29,7 @@ public final class Time {
     SAMPLE_BUFFER.add(this.currentFPS);
 
     if (SAMPLE_BUFFER.size() > SAMPLE_SIZE) {
-      SAMPLE_BUFFER.remove();
+      SAMPLE_BUFFER.poll();
       double sum = 0;
       for (double i : SAMPLE_BUFFER) sum += i;
       this.averageFPS = sum / SAMPLE_SIZE;

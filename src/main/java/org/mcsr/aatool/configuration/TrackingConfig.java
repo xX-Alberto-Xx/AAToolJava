@@ -25,7 +25,7 @@ public class TrackingConfig extends Config {
   public final Setting<Boolean> useSftp = new Setting<>(false);
 
   public final Setting<TrackerSource> source = new Setting<>(TrackerSource.ACTIVE_INSTANCE);
-  public final Setting<Path> customWorldPath = new Setting<>(Path.of(""));
+  public final Setting<Path> customWorldPath = new Setting<>(Paths.EMPTY_PATH);
   public final Setting<Path> customSavesPath = new Setting<>(Paths.Saves.MINECRAFT.resolve("saves"));
   public final Setting<Boolean> manualChecklistMode = new Setting<>(false);
 

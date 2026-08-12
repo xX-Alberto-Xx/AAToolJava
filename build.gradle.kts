@@ -20,6 +20,7 @@ repositories {
 dependencies {
   // This dependency is used by the application.
   implementation("com.google.code.gson:gson:2.14.0")
+  implementation("com.hierynomus:sshj:0.40.0")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

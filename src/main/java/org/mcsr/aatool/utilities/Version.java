@@ -82,6 +82,37 @@ public final class Version {
     return this.major != major || this.minor != minor || this.build != -1 || this.revision != -1;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    return this == obj || (
+      obj instanceof Version other &&
+      this.major == other.major &&
+      this.minor == other.minor &&
+      this.build == other.build &&
+      this.revision == other.revision
+    );
+  }
+
+  @Override
+  public int hashCode() {
+    return (this.major & 0xF) << 28
+         | (this.minor & 0xFF) << 20
+         | (this.build & 0xFF) << 12
+         | (this.revision & 0xFFF);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder dest = new StringBuilder().append(this.major).append('.').append(this.minor);
+
+    if (this.build != -1) {
+      dest.append('.').append(this.build);
+      if (this.revision != -1) dest.append('.').append(this.revision);
+    }
+
+    return dest.toString();
+  }
+
   public static Version tryParse(String input) {
     if (input == null) return null;
 

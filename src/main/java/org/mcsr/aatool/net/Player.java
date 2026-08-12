@@ -1,12 +1,6 @@
 package org.mcsr.aatool.net;
 
 import java.awt.Color;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,6 +11,7 @@ import java.util.regex.Pattern;
 
 import org.mcsr.aatool.Paths;
 import org.mcsr.aatool.configuration.Config;
+import org.mcsr.aatool.utilities.HttpUtils;
 import org.mcsr.aatool.utilities.JsonUtils;
 import org.mcsr.aatool.utilities.Result;
 import org.mcsr.aatool.utilities.Strings;
@@ -25,10 +20,6 @@ import com.google.gson.JsonObject;
 
 public final class Player {
   private static final Pattern NAME_REGEX = Pattern.compile("^\\w{3,16}$");
-  private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
-  private static final HttpRequest.Builder PARTIAL_UUID_REQUEST = HttpRequest.newBuilder()
-    .timeout(Duration.ofMillis(Protocol.Requests.TIMEOUT_NORMAL_MS))
-    .GET();
 
   public static final Map<String, Uuid> ID_CACHE = new HashMap<>();
   public static final Map<Uuid, String> NAME_CACHE = new HashMap<>();
@@ -78,23 +69,14 @@ public final class Player {
     if (!validateName(name)) return CompletableFuture.completedFuture(Uuid.EMPTY);
 
     Uuid cached = ID_CACHE.get(name);
-    if (cached != null) return CompletableFuture.completedFuture(cached);
 
-    URI uuidUrl;
-    try { uuidUrl = new URI(Paths.Web.getUuidUrl(name)); }
-    catch (URISyntaxException ignored) { return CompletableFuture.completedFuture(Uuid.EMPTY); }
-
-    return HTTP_CLIENT.sendAsync(
-      PARTIAL_UUID_REQUEST.uri(uuidUrl).build(),
-      HttpResponse.BodyHandlers.ofString()
+    return cached != null ? CompletableFuture.completedFuture(cached) : HttpUtils.getStringAsync(
+      Paths.Web.getUuidUrl(name)
     ).thenApply(response -> {
-      if (response.statusCode() != 200) return Uuid.EMPTY;
-
-      String body = response.body();
-      if (Strings.isNullOrEmpty(body)) return Uuid.EMPTY;
+      if (Strings.isNullOrEmpty(response)) return Uuid.EMPTY;
 
       Uuid id = Uuid.tryParse(
-        JsonUtils.STRICT_GSON.fromJson(body, JsonObject.class)
+        JsonUtils.STRICT_GSON.fromJson(response, JsonObject.class)
           .getAsJsonPrimitive("id").getAsString()
       );
 

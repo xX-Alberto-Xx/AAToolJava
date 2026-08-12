@@ -118,10 +118,8 @@ public class RunnerProfile {
 
       return profile;
     } catch (
-      JsonSyntaxException |
-      NullPointerException |
-      ClassCastException |
-      IllegalStateException ignored
+      JsonSyntaxException | NullPointerException |
+      ClassCastException | IllegalStateException ignored
     ) {
       return null;
     }

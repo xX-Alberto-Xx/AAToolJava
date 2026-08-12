@@ -86,9 +86,7 @@ public class AdvancementManifest implements Manifest {
       this.requireAdvancement(advancementElem.getAsJsonObject(), group);
     }
 
-    String fileName = file.getFileName().toString();
-    int dotIndex = fileName.lastIndexOf('.');
-    this.groups.put(dotIndex != -1 ? fileName.substring(0, dotIndex) : fileName, group);
+    this.groups.put(Paths.getFileNameWithoutExtension(file), group);
   }
 
   private void requireAdvancement(JsonObject obj, Set<Advancement> group) {
